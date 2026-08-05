@@ -1328,23 +1328,58 @@
                 return matchCat && matchSearch;
             });
 
-            filtered.forEach(p => {
-                const card = document.createElement('div');
-                card.className = "bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-2.5 flex flex-col justify-between hover:shadow-md transition-all cursor-pointer group";
-                card.onclick = () => addToCart(p);
-
-                card.innerHTML = `
-                    <div class="relative w-full h-28 rounded-xl overflow-hidden mb-2 bg-slate-100 dark:bg-slate-700">
-                        <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://placehold.co/200x200/2563eb/ffffff?text=Menu'">
-                        <span class="absolute top-1.5 right-1.5 px-2 py-0.5 bg-slate-900/70 text-white text-[10px] font-bold rounded-md">Stok: ${p.stock}</span>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 dark:text-white text-xs line-clamp-1">${p.name}</h4>
-                        <p class="text-brand-600 dark:text-brand-400 font-bold text-xs mt-0.5">Rp ${p.price.toLocaleString('id-ID')}</p>
-                    </div>
+            if (filtered.length === 0) {
+                container.className = "w-full py-12 text-center text-slate-400 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700";
+                container.innerHTML = `
+                    <i class="fa-solid fa-utensils text-3xl mb-2"></i>
+                    <p class="text-xs font-semibold">Tidak ada menu produk ditemukan</p>
                 `;
-                container.appendChild(card);
-            });
+                return;
+            }
+
+            // Render sesuai mode tampilan: Klasik (Daftar List) vs Grid (Kartu)
+            if (productViewMode === 'classic') {
+                container.className = "flex flex-col space-y-2 overflow-y-auto max-h-[550px] pr-1";
+                filtered.forEach(p => {
+                    const itemRow = document.createElement('div');
+                    itemRow.className = "bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-2.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all cursor-pointer group shadow-xs";
+                    itemRow.onclick = () => addToCart(p);
+
+                    itemRow.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <img src="${p.img}" alt="${p.name}" class="w-12 h-12 rounded-lg object-cover bg-slate-100 dark:bg-slate-700 flex-shrink-0" onerror="this.src='https://placehold.co/200x200/2563eb/ffffff?text=Menu'">
+                            <div>
+                                <h4 class="font-bold text-slate-800 dark:text-white text-xs group-hover:text-brand-600 transition-colors">${p.name}</h4>
+                                <p class="text-[11px] text-slate-400 dark:text-slate-500">${p.category} • Stok: ${p.stock}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-brand-600 dark:text-brand-400 font-bold text-xs">Rp ${p.price.toLocaleString('id-ID')}</p>
+                            <span class="text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full inline-block mt-0.5 group-hover:bg-brand-50 group-hover:text-brand-600 transition-colors"><i class="fa-solid fa-plus text-[8px] mr-1"></i>Tambah</span>
+                        </div>
+                    `;
+                    container.appendChild(itemRow);
+                });
+            } else {
+                container.className = "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 overflow-y-auto max-h-[550px] pr-1";
+                filtered.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-2.5 flex flex-col justify-between hover:shadow-md transition-all cursor-pointer group";
+                    card.onclick = () => addToCart(p);
+
+                    card.innerHTML = `
+                        <div class="relative w-full h-28 rounded-xl overflow-hidden mb-2 bg-slate-100 dark:bg-slate-700">
+                            <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://placehold.co/200x200/2563eb/ffffff?text=Menu'">
+                            <span class="absolute top-1.5 right-1.5 px-2 py-0.5 bg-slate-900/70 text-white text-[10px] font-bold rounded-md">Stok: ${p.stock}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 dark:text-white text-xs line-clamp-1">${p.name}</h4>
+                            <p class="text-brand-600 dark:text-brand-400 font-bold text-xs mt-0.5">Rp ${p.price.toLocaleString('id-ID')}</p>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
         }
 
         function addToCart(product) {
@@ -2050,8 +2085,10 @@
 
         function toggleProductViewMode() {
             productViewMode = productViewMode === 'grid' ? 'classic' : 'grid';
-            document.getElementById('view-mode-label').innerText = productViewMode === 'grid' ? 'Grid' : 'Klasik';
+            const label = document.getElementById('view-mode-label');
+            if (label) label.innerText = productViewMode === 'grid' ? 'Grid' : 'Klasik';
             renderProducts();
+            showToast(`Tampilan menu diubah ke mode ${productViewMode === 'grid' ? 'Grid' : 'Klasik'}`);
         }
     </script>
 </body>
